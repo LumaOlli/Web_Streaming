@@ -2,7 +2,7 @@
 
 import { useContext, useState } from "react";
 import { HomeContext } from "./context/HomeContext";
-import { FaPause, FaPlay, FaBackward, FaForward } from "react-icons/fa";
+import { FaPause, FaPlay, FaBackward, FaForward, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import videos, { Video } from './data/video';
 import { convertTimeToString } from "./utils/Utils";
 
@@ -15,6 +15,7 @@ const categorizedVideos = {
 
 export default function Home() {
   const [showFilter, setShowFilter] = useState(true);
+  const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
   const {
     videoURL,
     playing,
@@ -32,18 +33,28 @@ export default function Home() {
 
   const handleVideoClick = (index: number) => {
     configVideo(index);
-    playPause();
+    setCurrentVideo(videos[index]);
+    if (!playing) {
+      playPause();
+    }
   };
 
   const handleNextVideo = () => {
     const nextIndex = (videos.findIndex(video => video.videoURL === videoURL) + 1) % videos.length;
     configVideo(nextIndex);
+    setCurrentVideo(videos[nextIndex]);
   };
 
   const handlePreviousVideo = () => {
     const currentIndex = videos.findIndex(video => video.videoURL === videoURL);
     const prevIndex = (currentIndex - 1 + videos.length) % videos.length;
     configVideo(prevIndex);
+    setCurrentVideo(videos[prevIndex]);
+  };
+
+  // Alterna o volume entre mudo e som ativo
+  const toggleMute = () => {
+    configVolume(volume > 0 ? 0 : 0.5);
   };
 
   return (
@@ -65,21 +76,20 @@ export default function Home() {
             </button>
           </div>
 
+          {/* Barra de Progresso */}
           <input 
-            className="appearance-none
-                      [&::-webkit-slider-runnable-track]:appearance-none
-                      [&::-webkit-slider-thumb]:appearance-none
-                      [&::-webkit-slider-runnable-track]:bg-[tomato]
-                      [&::-webkit-slider-runnable-track]:h-[10px]
-                      [&::-webkit-slider-thumb]:w-[10px]
-                      [&::-webkit-slider-thumb]:bg-[green]"
             type="range"
             min={0}
             max={totalTime}
             value={currentTime}
             onChange={(e) => configCurrentTime(Number(e.target.value))}
+            className="mx-2"
           />
 
+          {/* Controle de Volume com Ícone Dinâmico */}
+          <button onClick={toggleMute} className="text-white mx-2">
+            {volume > 0 ? <FaVolumeUp /> : <FaVolumeMute />}
+          </button>
           <input 
             type="range" 
             min={0} 
@@ -105,28 +115,53 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Informações do Vídeo Atual */}
+      {currentVideo && (
+        <div className="w-full mt-4 p-4 bg-gray-200 rounded-lg">
+          <h3 className="text-xl font-bold">{currentVideo.name}</h3>
+          <p className="text-gray-700">{currentVideo.description}</p>
+        </div>
+      )}
+
+      {/* Seção de vídeos categorizados */}
       <div className="w-full">
         {
-          Object.entries(categorizedVideos).map(([category, videos]) => (
+          Object.entries(categorizedVideos).map(([category, videosInCategory]) => (
             <div key={category} className="mb-8">
               <h2 className="text-black text-lg font-bold mb-2">{category}</h2>
               <div className="grid grid-cols-3 gap-4">
-                {videos.map((video: Video, index) => (
-                  <button 
-                    key={index} 
-                    className="w-full relative" 
-                    onClick={() => handleVideoClick(index)}
-                  >
-                    <span className="absolute top-0 left-0 w-full text-center text-white bg-black bg-opacity-70 p-1">
-                      {video.name}
-                    </span>
-                    <img 
-                      className="w-full h-auto border-2 border-gray-300 rounded-lg object-contain" 
-                      src={video.imageURL} 
-                      alt={`Thumbnail of ${video.name}`} 
-                    />
-                  </button>
-                ))}
+                {videosInCategory.map((video: Video) => {
+                  const absoluteIndex = videos.findIndex(v => v.videoURL === video.videoURL);
+                  const isCurrentVideo = videoURL === video.videoURL;
+                  const progress = isCurrentVideo ? (currentTime / totalTime) * 100 : 0;
+
+                  return (
+                    <button 
+                      key={video.videoURL} 
+                      className="w-full relative" 
+                      onClick={() => handleVideoClick(absoluteIndex)}
+                    >
+                      <span className="absolute top-0 left-0 w-full text-center text-white bg-black bg-opacity-70 p-1">
+                        {video.name}
+                      </span>
+                      <img 
+                        className="w-full h-auto border-2 border-gray-300 rounded-lg object-contain" 
+                        src={video.imageURL} 
+                        alt={`Thumbnail of ${video.name}`} 
+                      />
+                      
+                      {/* Barra de Progresso na Parte Inferior da Imagem */}
+                      {isCurrentVideo && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-300">
+                          <div 
+                            className="h-full bg-tomato" 
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))
