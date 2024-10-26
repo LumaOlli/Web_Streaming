@@ -6,7 +6,6 @@ import { FaPause, FaPlay, FaBackward, FaForward } from "react-icons/fa";
 import videos, { Video } from './data/video';
 import { convertTimeToString } from "./utils/Utils";
 
-// Exemplo de estrutura de dados para vídeos por categorias
 const categorizedVideos = {
   Romance: videos.filter(video => video.category === "Romance"),
   Ação: videos.filter(video => video.category === "Ação"),
@@ -27,13 +26,13 @@ export default function Home() {
     configCurrentTime,
     configVideo,
     configFilter,
-    configVolume, // Adicionado para o controle de volume
-    volume, // Adicionado para acessar o volume atual
+    configVolume,
+    volume,
   } = useContext(HomeContext);
 
   const handleVideoClick = (index: number) => {
     configVideo(index);
-    playPause(); // Inicia a reprodução do vídeo ao clicar na imagem
+    playPause();
   };
 
   const handleNextVideo = () => {
@@ -49,7 +48,6 @@ export default function Home() {
 
   return (
     <main className="mx-auto w-[70%] mt-2 flex flex-col">
-      {/* Caixa de reprodução */}
       <div className="w-full mb-4">
         <video className="w-full" ref={videoRef} src={videoURL} hidden={showFilter}></video>
         <canvas className="w-full h-[380px]" ref={canvasRef} hidden={!showFilter}></canvas>
@@ -107,7 +105,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Seção de vídeos categorizados */}
       <div className="w-full">
         {
           Object.entries(categorizedVideos).map(([category, videos]) => (
@@ -117,9 +114,12 @@ export default function Home() {
                 {videos.map((video: Video, index) => (
                   <button 
                     key={index} 
-                    className="w-full" 
-                    onClick={() => handleVideoClick(index)} // Chama a função ao clicar
+                    className="w-full relative" 
+                    onClick={() => handleVideoClick(index)}
                   >
+                    <span className="absolute top-0 left-0 w-full text-center text-white bg-black bg-opacity-70 p-1">
+                      {video.name}
+                    </span>
                     <img 
                       className="w-full h-auto border-2 border-gray-300 rounded-lg object-contain" 
                       src={video.imageURL} 
