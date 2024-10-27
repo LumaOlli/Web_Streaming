@@ -2,26 +2,26 @@
 
 import { useContext, useState } from "react";
 import { HomeContext } from "./context/HomeContext";
-import { FaPause, FaPlay, FaBackward, FaForward } from "react-icons/fa";
+import { FaPause, FaPlay, FaBackward, FaForward, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import videos, { Video } from './data/video';
 import { convertTimeToString } from "./utils/Utils";
-
-// Cabeçalho do Site
-const Header = () => {
-  return (
-    <header className="bg-gray-800 text-white p-4 text-center">
-      <h1 className="text-3xl font-bold">StreamWave🌊✨</h1>
-      <p className="text-sm mt-2">Bem-vindo!</p>
-      <p className="text-sm">Seu destino para filmes e vídeos.</p>
-    </header>
-  );
-};
 
 const categorizedVideos = {
   Romance: videos.filter(video => video.category === "Romance"),
   Ação: videos.filter(video => video.category === "Ação"),
   Suspense: videos.filter(video => video.category === "Suspense"),
   Drama: videos.filter(video => video.category === "Drama"),
+};
+
+// Componente de cabeçalho
+const Header = () => {
+  return (
+    <header className="bg-gray-800 text-white p-4 text-center">
+      <h1 className="text-3xl font-bold">StreamWave</h1>
+      <p className="text-sm mt-2">Bem-vindo ao StreamWave! 🌊✨</p>
+      <p className="text-sm">Seu destino para filmes e vídeos.</p>
+    </header>
+  );
 };
 
 export default function Home() {
@@ -63,9 +63,14 @@ export default function Home() {
     setCurrentVideo(videos[prevIndex]);
   };
 
+  // Alterna o volume entre mudo e som ativo
+  const toggleMute = () => {
+    configVolume(volume > 0 ? 0 : 0.5);
+  };
+
   return (
     <main className="mx-auto w-[70%] mt-2 flex flex-col">
-      <Header /> {/* Adicionando o cabeçalho */}
+      <Header /> {/* Adicionando o cabeçalho aqui */}
 
       <div className="w-full mb-4">
         <video className="w-full" ref={videoRef} src={videoURL} hidden={showFilter}></video>
@@ -84,6 +89,7 @@ export default function Home() {
             </button>
           </div>
 
+          {/* Barra de Progresso */}
           <input 
             type="range"
             min={0}
@@ -93,6 +99,10 @@ export default function Home() {
             className="mx-2"
           />
 
+          {/* Controle de Volume com Ícone Dinâmico */}
+          <button onClick={toggleMute} className="text-white mx-2">
+            {volume > 0 ? <FaVolumeUp /> : <FaVolumeMute />}
+          </button>
           <input 
             type="range" 
             min={0} 
@@ -135,7 +145,7 @@ export default function Home() {
               <div className="grid grid-cols-3 gap-4">
                 {videosInCategory.map((video: Video) => {
                   const absoluteIndex = videos.findIndex(v => v.videoURL === video.videoURL);
-                  const isCurrentVideo = videoURL === video.videoURL; // Verifica se o vídeo está em reprodução
+                  const isCurrentVideo = videoURL === video.videoURL;
                   const progress = isCurrentVideo ? (currentTime / totalTime) * 100 : 0;
 
                   return (
@@ -153,6 +163,7 @@ export default function Home() {
                         alt={`Thumbnail of ${video.name}`} 
                       />
                       
+                      {/* Barra de Progresso na Parte Inferior da Imagem */}
                       {isCurrentVideo && (
                         <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-300">
                           <div 
